@@ -1,0 +1,1 @@
+export const REQ_DATA = 'REQ_DATA'

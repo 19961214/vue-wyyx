@@ -46,12 +46,28 @@ export default {
       reqList:[]
     };
   },
-  methods: {},
+  methods: {
+    reqSeachLists(){
+      let timer = null
+      const _this = this
+      return function(){
+        clearTimeout(timer)
+        timer = setTimeout( async ()=>{
+          //this的只想指向返回的function函数，——this缓存
+          const result = await reqSeachList(_this.timeValue);
+          _this.reqList = result.data
+        },1000)
+      }
+    }
+
+  },
   watch: {
-    async timeValue() {
-      const result = await reqSeachList(this.timeValue);
-      //console.log(result);
-      this.reqList = result.data
+    timeValue() {
+      // const result = await reqSeachList(this.timeValue);
+      // //console.log(result);
+      // this.reqList = result.data
+      //因为防抖函数里面的返回值是一个函数，需要手动调用
+      this.reqSeachLists()()
     }
   },
 

@@ -33,7 +33,7 @@
           <img src="../../images/4/1.jpg" alt />
         </div>
 
-        <div v-for="(item,index) in this.datas" :key="index">
+        <div v-for="(item,index) in datas" :key="index">
           <div class="topic_content_one" v-if="item.type===0">
             <div class="content_one_top">
               <img :src="item.avatar" alt />
@@ -43,7 +43,7 @@
             <img :src="item.picUrl" alt />
             <div class="content_one_bottom">
               <span class="iconfont icon-seachx"></span>
-              <span>{{item.readCount}}人看过</span>
+              <span>{{item.readCount|date-format}}人看过</span>
             </div>
           </div>
           <!-- //222222222222222 -->
@@ -57,7 +57,7 @@
               <p class="text2">{{item.subTitle}}</p>
               <div class="two_left_bottom">
                 <span class="iconfont icon-seachx"></span>
-                <span>{{item.readCount}}人看过</span>
+                <span>{{item.readCount|date-format}}人看过</span>
               </div>
             </div>
             <div class="content_two_right">
@@ -73,51 +73,61 @@
 </template>
 <script>
 import BScroll from "better-scroll";
-import { reqTopic } from "../../api/index";
+import {mapState} from 'vuex'
 export default {
   data() {
     return {
-      datas: [],
+      // datas: [],
       page: 1
     };
   },
+  computed: {
+    ...mapState(['datas'])
+  },
   mounted() {
+    //console.log(this)
+    //头部nav初始化滑动
     new BScroll(".header_bottom2", {
       click: true,
       scrollX: true
     });
-
-    this.reqData(this.page, 2);
+//调用reqData和initScroll方法
+    //this.reqData(this.page, 2);
     //console.log(this.datas);
+    this.$store.dispatch('reqData',this.page,2)
     this.initScroll();
   },
   methods: {
-    async reqData(page, size) {
-      const result = await reqTopic(this.num, 2);
+    //reqData封装了请求数据的方法，初始化获取显示数据
+    //async reqData(page, size) {
+      // const result = await reqTopic(this.num, 2);
       //console.log(result.data.result)
-      const final = result.data.result;
+      // const final = result.data.result;
       //console.log(final)
-      final.forEach((item, index) => {
-        this.datas = [...this.datas, ...item.topics];
-      });
-    },
-
+      // final.forEach((item, index) => {
+      //   this.datas = [...this.datas, ...item.topics];
+      // });
     initScroll() {
+      //$nextTick方法当界面发生dom变化或跟新的时候触发后面的回掉函数
       this.$nextTick(() => {
         if (!this.scroll) {
           this.scroll = new BScroll(".wrap", {
             click: true,
             scrollX: true,
             scrollbar: true,
+            //probeType滑动组件提供的方法，可以得到实时滑动的距离值
             probeType: 3
           });
         } else {
+          //refresh是滑动插件里告诉我们需要调用，防止数据更新滑动出现问题
           this.scroll.refresh();
         }
+        //touchEnd当手指抬起的时候触发，计算滑动的距离
         this.scroll.on("touchEnd", (pos) => {
           if (this.scroll.maxScrollY > pos.y - 10) {
             this.page++;
-            this.reqData(this.page, 2);
+            //this.reqData(this.page, 2);
+             this.$store.dispatch('reqData',this.page,2)
             this.scroll.refresh();
           }
         });
